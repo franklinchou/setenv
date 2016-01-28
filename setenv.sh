@@ -24,35 +24,37 @@ __sanitize() {
 }
 
 function usetenv {
-    for line in $(cat "$_env_file"); do
-        var=$(echo "$line" | cut -f1 -d"=")
-        unset $var
-    done
+    local key value
+    while IFS='=' read -r key value; do
+        unset "$key"
+    done < "$_env_file"
 
     if [ -n "$_old_ps1" ]; then
         PS1="$_old_ps1"
         export PS1
         unset _old_ps1
-        unset ENV_VAR
-        unset -f usetenv
     fi
+
+    unset ENV_VAR
+    unset -f usetenv
+    unset _env_file
 }
 
 function __setvars {
     echo "Setting project environment variables..."
 
-    for line in $(cat $_env_file); do
-        var="$(echo "$line" | cut -f1 -d"=")"
-        if [ -n ${line} ]; then
-            export echo "${line}"
-            var="$(echo "$line" | cut -f1 -d"=")"
-            printf "\t${Green}%s${Color_Off}\t%s\n" '[OK]' $var
-        else
-            printf "\t${Red}%s${Color_Off}\t%s\n" '[FAIL]' $var
-        fi
-    done
+    local key value
 
-    echo
+    while IFS='=' read -r key value; do
+        if [ -n ${key} ]; then
+            export "$key""=""$value"
+            printf "\t${Green}%s${Color_Off}\t%s\n" '[OK]' $key
+        else
+            printf "\t${Red}%s${Color_Off}\t%s\n" '[FAIL]' $key
+        fi
+    done < "$_env_file"
+
+    printf "\n"
 
     _old_ps1="$PS1"
     PS1="\[$BPurple\][ENV]\[$Color_Off\] $PS1"
@@ -60,9 +62,9 @@ function __setvars {
 }
 
 if [ ! -f "$_env_file" ]; then
-    echo "Error: Environment variables not found."
+    printf "Error: Environment variables not found.\n"
 elif [ "$ENV_VAR" == 1 ]; then
-    echo "Environment variables already set."
+    printf "Environment variables already set.\n"
 else
     __setvars
     export ENV_VAR=1
