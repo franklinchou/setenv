@@ -34,6 +34,7 @@ function usetenv {
         export PS1
         unset _old_ps1
         unset ENV_VAR
+        unset -f usetenv
     fi
 }
 
@@ -41,10 +42,10 @@ function __setvars {
     echo "Setting project environment variables..."
 
     for line in $(cat $_env_file); do
-        var="$(echo $line | cut -f1 -d"=")"
+        var="$(echo "$line" | cut -f1 -d"=")"
         if [ -n ${line} ]; then
             export echo "${line}"
-            var="$(echo $line | cut -f1 -d"=")"
+            var="$(echo "$line" | cut -f1 -d"=")"
             printf "\t${Green}%s${Color_Off}\t%s\n" '[OK]' $var
         else
             printf "\t${Red}%s${Color_Off}\t%s\n" '[FAIL]' $var
