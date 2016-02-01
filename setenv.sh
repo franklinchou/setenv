@@ -46,7 +46,7 @@ function __setvars {
     local key value
 
     while IFS='=' read -r key value; do
-        if [ -n ${key} ]; then
+        if [ -n "${key}" ]; then
             export "$key""=""$value"
             printf "\t${Green}%s${Color_Off}\t%s\n" '[OK]' $key
         else
