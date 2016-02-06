@@ -27,7 +27,7 @@ function usetenv {
     local key value
     while IFS='=' read -r key value; do
         unset "$key"
-    done < "$_env_file"
+    done < "$PROJ_ROOT/$_env_file"
 
     if [ -n "$_old_ps1" ]; then
         PS1="$_old_ps1"
@@ -38,6 +38,7 @@ function usetenv {
     unset ENV_VAR
     unset -f usetenv
     unset _env_file
+    unset PROJ_ROOT
 }
 
 function __setvars {
@@ -62,10 +63,11 @@ function __setvars {
 }
 
 if [ ! -f "$_env_file" ]; then
-    printf "Error: Environment variables not found.\n"
+    printf "Error: Environment variables not found. Execute from project root.\n"
 elif [ "$ENV_VAR" == 1 ]; then
     printf "Environment variables already set.\n"
 else
     __setvars
+    declare PROJ_ROOT="${PWD}"
     export ENV_VAR=1
 fi
