@@ -11,9 +11,15 @@ project.
 * Create a file named `.env` and list your project's environmental variables,
 e.g., `DATABASE='/path/to/database.db'`
 
-* Issue: `source setenv.sh` to set up environment variables. If all the
-variables are correctly setup a `[ENV]` indicator will appear on the left
-hand side of the prompt in bold purple. (Draws inspiration from the
-virtualenvironment indicator in Python.)
+* Issue: `source setenv.sh` to set up environment variables _AND_ setup the virutalenv. If the venv
+and environment variables are correctly setup a `[VENV+]` indicator will appear on the left
+hand side of the prompt in bold purple.
 
-* Issue: `usetenv` to unset all environment variables.
+* Issue: `usetenv` to exit the virtual environment _AND_ unset all environment variables.
+
+__NOTES__:
+
+* This will completely override the builtin `deactivate` command.
+* The default venv scripts are not modified; so the canned venv setup script will still work out of
+the box if you chose to use it. However, if you launch `setenv` (using `source setenv.sh`), any
+interaction with the canned venv scripts will be __disabled__.
