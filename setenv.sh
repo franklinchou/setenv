@@ -2,7 +2,7 @@
 # Setting project specific environmental variables
 #
 # Franklin Chou
-# 28 JAN 2016
+# 05 APR 2016
 #
 # Usage:
 # To set project environment variables, issue `source setenv`
@@ -115,6 +115,8 @@ function usetenv {
     unset -f usetenv
     unset _env_file
     unset PROJ_ROOT
+
+    unalias ph
 }
 
 function __setvars {
@@ -136,6 +138,9 @@ function __setvars {
     _old_ps1="$PS1"
     PS1="\[$BPurple\][VENV+]\[$Color_Off\] $PS1"
     export PS1
+
+    # Issue `ph` to return to project home dir.
+    alias ph='cd ${PROJ_ROOT}'
 
     printf "To deactivate and unset all environment variables, issue \`usetenv\`.\n"
 }
