@@ -61,63 +61,36 @@ if [ ! -e "${_venv}""/bin/activate" ]; then
     return
 fi
 
-# Check venv status
-if [ -z "$VIRTUAL_ENV" ]; then
-    # If no venv is running, activate the venv.
-    printf "Setting up virtual environment...\n"
+function __activate_venv {
 
-    # Override the PS1 used by venv
-    _old_ps1="$PS1"
-    source "$_venv""/bin/activate"
-    PS1="$_old_ps1"
+    # Check venv status
+    if [ -z "$VIRTUAL_ENV" ]; then
+        # If no venv is running, activate the venv.
+        printf "Setting up virtual environment...\n"
 
-    # Override the `deactivate` command used by venv
-    __override deactivate canned_deactivate
+        # Override the PS1 used by venv
+        _old_ps1="$PS1"
+        source "$_venv""/bin/activate"
+        PS1="$_old_ps1"
 
-    # Destroy reference to the original deactivate command
-    unset deactivate
-else
-    printf "${BRed}Error: ${Color_Off} ""A virtual environment has been detected.\n"
-    printf "  Deactivate the existing virutal environment and reissue \`source setenv\`.\n"
-    return
-fi
+        # Override the `deactivate` command used by venv
+        __override deactivate canned_deactivate
+
+        # Destroy reference to the original deactivate command
+        unset deactivate
+    else
+        printf "${BRed}Error: ${Color_Off} ""A virtual environment has been detected.\n"
+        printf "  Deactivate the existing virutal environment and reissue \`source setenv\`.\n"
+        return
+    fi
+
+}
+
 
 #------------------------------------------------------------------------------
 
 declare _env_file=.env
 declare -i ENV_VAR
-
-function usetenv {
-
-    # As per [issue 3], call deactivate (venv) from setenv
-
-    # Check venv status
-    if [ -z "$VIRTUAL_ENV" ]; then
-        # unexpected error
-        return
-    else
-        # If a virtual environment is detected, shut it down
-        canned_deactivate
-    fi
-
-    local key value
-    while IFS='=' read -r key value; do
-        unset "$key"
-    done < "$PROJ_ROOT/$_env_file"
-
-    if [ -n "$_old_ps1" ]; then
-        PS1="$_old_ps1"
-        export PS1
-        unset _old_ps1
-    fi
-
-    unset ENV_VAR
-    unset -f usetenv
-    unset _env_file
-    unset PROJ_ROOT
-
-    unalias ph
-}
 
 function __setvars {
     printf "Setting project environment variables...\n"
@@ -145,13 +118,58 @@ function __setvars {
     printf "To deactivate and unset all environment variables, issue \`usetenv\`.\n"
 }
 
+#------------------------------------------------------------------------------
+
+# Unset
+
+function usetenv {
+    if [ -z "$VIRTUAL_ENV" ]; then
+        # Unexpected error
+        return
+    elif [ -z "$ENV_VAR" ]; then
+        printf "No project specific environment variables set.\n"
+    else
+        printf "Unsetting project specific environment variables.\n"
+        canned_deactivate
+        __unset
+    fi
+}
+
+function __unset {
+    local key value
+    while IFS="=" read -r key value; do
+        unset "$key"
+    done < "$PROJ_ROOT/$_env_file"
+
+    # Reset the command prompt
+    if [ -n "$_old_ps1" ]; then
+        PS1="$_old_ps1"
+        export PS1
+        unset _old_ps1
+    fi
+    
+    unset ENV_VAR
+    unset -f usetenv
+    unset _env_file
+    unset __unset
+    unset PROJ_ROOT
+    unalias ph
+}
+
+
+
+#------------------------------------------------------------------------------
+
+# MAIN
+
 if [ ! -f "$_env_file" ]; then
     printf "${BRed}Error:${Color_Off} ""Environment variables not found.\n"
-    printf "  Execute from project root.\n"
+    printf "  Create \`.env\` file or execute from project root.\n"
 elif [ "$ENV_VAR" == 1 ]; then
     printf "Environment variables already set. Nothing to do.\n"
 else
     __setvars
+    __activate_venv
     declare PROJ_ROOT="${PWD}"
     export ENV_VAR=1
 fi
