@@ -118,14 +118,58 @@ function __setvars {
     printf "To deactivate and unset all environment variables, issue \`usetenv\`.\n"
 }
 
+#------------------------------------------------------------------------------
+
+# Unset
+
+function usetenv {
+    if [ -z "$VIRTUAL_ENV" ]; then
+        # Unexpected error
+        return
+    elif [ -z "$ENV_VAR" ]; then
+        printf "No project specific environment variables set.\n"
+    else
+        printf "Unsetting project specific environment variables.\n"
+        canned_deactivate
+        __unset
+    fi
+}
+
+function __unset {
+    local key value
+    while IFS="=" read -r key value; do
+        unset "$key"
+    done < "$PROJ_ROOT/$_env_file"
+
+    # Reset the command prompt
+    if [ -n "$_old_ps1" ]; then
+        PS1="$_old_ps1"
+        export PS1
+        unset _old_ps1
+    fi
+    
+    unset ENV_VAR
+    unset -f usetenv
+    unset _env_file
+    unset __unset
+    unset PROJ_ROOT
+    unalias ph
+}
+
+
+
+#------------------------------------------------------------------------------
+
+# MAIN
+
 if [ ! -f "$_env_file" ]; then
     printf "${BRed}Error:${Color_Off} ""Environment variables not found.\n"
-    printf "  Create `.env` file or execute from project root.\n"
+    printf "  Create \`.env\` file or execute from project root.\n"
 elif [ "$ENV_VAR" == 1 ]; then
     printf "Environment variables already set. Nothing to do.\n"
 else
     __setvars
+    __activate_venv
     declare PROJ_ROOT="${PWD}"
     export ENV_VAR=1
-    source usetenv
 fi
