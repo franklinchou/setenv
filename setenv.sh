@@ -2,7 +2,7 @@
 # Setting project specific environmental variables
 #
 # Franklin Chou
-# 05 APR 2016
+# 11 NOV 2018
 #
 # Usage:
 # To set project environment variables, issue `source setenv`
@@ -19,6 +19,15 @@ Color_Off='\e[0m'       # Text Reset
 
 #------------------------------------------------------------------------------
 
+# Constants
+
+declare _ENV_FILE=.env
+declare -i _ENV_VAR
+declare _VENV=venv
+declare PROJ_ROOT="${PWD}"
+
+#------------------------------------------------------------------------------
+
 # Internal functions
 
 # Takes two parameters, the first being the original function name,
@@ -29,13 +38,6 @@ __override() {
     local orig_func=$(declare -f $1)
     local new_func="$2${orig_func#$1}"
     eval "$new_func"
-}
-
-
-# Sanitizing variables draws inspiration from:
-#   https://github.com/rbenv/rbenv-vars
-__sanitize() {
-    :
 }
 
 #------------------------------------------------------------------------------
@@ -50,49 +52,8 @@ fi
 
 #------------------------------------------------------------------------------
 
-# Interact (& override) the default behaviour bundled w/the virtualenv
-#   bash scripts
 
-declare _venv=venv
-
-if [ ! -e "${_venv}""/bin/activate" ]; then
-    printf "${BRed}Error:${Color_Off} ""Improperly configured virtual environment.\n"
-    printf "  Virtual environment directory at \`"${_venv}"\` not detected.\n"
-    return
-fi
-
-function __activate_venv {
-
-    # Check venv status
-    if [ -z "$VIRTUAL_ENV" ]; then
-        # If no venv is running, activate the venv.
-        printf "Setting up virtual environment...\n"
-
-        # Override the PS1 used by venv
-        _old_ps1="$PS1"
-        source "$_venv""/bin/activate"
-        PS1="$_old_ps1"
-
-        # Override the `deactivate` command used by venv
-        __override deactivate canned_deactivate
-
-        # Destroy reference to the original deactivate command
-        unset deactivate
-    else
-        printf "${BRed}Error: ${Color_Off} ""A virtual environment has been detected.\n"
-        printf "  Deactivate the existing virutal environment and reissue \`source setenv\`.\n"
-        return
-    fi
-
-}
-
-
-#------------------------------------------------------------------------------
-
-declare _env_file=.env
-declare -i ENV_VAR
-
-function __setvars {
+function __set_vars {
     printf "Setting project environment variables...\n"
 
     local key value
@@ -104,7 +65,7 @@ function __setvars {
         else
             printf "\t${Red}%s${Color_Off}\t%s\n" '[FAIL]' $key
         fi
-    done < "$_env_file"
+    done < "$_ENV_FILE"
 
     printf "\n"
 
@@ -120,26 +81,48 @@ function __setvars {
 
 #------------------------------------------------------------------------------
 
-# Unset
-
-function usetenv {
+function __set_venv {
+    # Check venv status
     if [ -z "$VIRTUAL_ENV" ]; then
-        # Unexpected error
-        return
-    elif [ -z "$ENV_VAR" ]; then
-        printf "No project specific environment variables set.\n"
+        # If no venv is running, activate the venv.
+        printf "Python environment detected: setting up virtual environment...\n"
+
+        # Override the PS1 used by venv
+        _old_ps1="$PS1"
+        source "$_VENV""/bin/activate"
+        PS1="$_old_ps1"
+
+        # Override the `deactivate` command used by venv
+        __override deactivate canned_deactivate
+
+        # Destroy reference to the original deactivate command
+        unset deactivate
     else
-        printf "Unsetting project specific environment variables.\n"
-        canned_deactivate
-        __unset
+        printf "${BRed}Error: ${Color_Off} ""A virtual environment has been detected.\n"
+        printf "  Deactivate the existing virtual environment and reissue \`source setenv\`.\n"
+        return
     fi
 }
 
+#------------------------------------------------------------------------------
+
+# Unset
+
+function usetenv {
+    if [ -d "$PROJ_ROOT/$_VENV" ]; then
+        printf "Deactivating Python virtual environment...\n"
+        canned_deactivate
+    fi
+    
+    __unset
+}
+
 function __unset {
+    printf "Unsetting project specific environment variables.\n"
     local key value
     while IFS="=" read -r key value; do
         unset "$key"
-    done < "$PROJ_ROOT/$_env_file"
+    done < "$PROJ_ROOT/$_ENV_FILE"
 
     # Reset the command prompt
     if [ -n "$_old_ps1" ]; then
@@ -148,28 +131,32 @@ function __unset {
         unset _old_ps1
     fi
     
-    unset ENV_VAR
+    unset _ENV_VAR
     unset -f usetenv
-    unset _env_file
+    unset _ENV_FILE
+
     unset __unset
     unset PROJ_ROOT
     unalias ph
 }
 
-
-
 #------------------------------------------------------------------------------
 
 # MAIN
 
-if [ ! -f "$_env_file" ]; then
+if [ ! -f "$_ENV_FILE" ]; then
     printf "${BRed}Error:${Color_Off} ""Environment variables not found.\n"
     printf "  Create \`.env\` file or execute from project root.\n"
-elif [ "$ENV_VAR" == 1 ]; then
+    return
+elif [ "$_ENV_VAR" == 1 ]; then
     printf "Environment variables already set. Nothing to do.\n"
+    return
+elif [ -e "${_VENV}""/bin/activate" ]; then
+    __set_venv
+    __set_vars
+    export _ENV_VAR=1  
 else
-    __setvars
-    __activate_venv
-    declare PROJ_ROOT="${PWD}"
-    export ENV_VAR=1
+    __set_vars
+    export _ENV_VAR=1  
 fi
+  
