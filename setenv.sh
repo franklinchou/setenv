@@ -31,13 +31,6 @@ __override() {
     eval "$new_func"
 }
 
-
-# Sanitizing variables draws inspiration from:
-#   https://github.com/rbenv/rbenv-vars
-__sanitize() {
-    :
-}
-
 #------------------------------------------------------------------------------
 
 # Detect proper environment
@@ -155,3 +148,15 @@ else
     declare PROJ_ROOT="${PWD}"
     export ENV_VAR=1
 fi
+
+while :; do
+    case $1 in
+        -p|--python)
+            __activate_venv
+            ;;
+        *)
+            break
+    esac
+
+    shift
+done
