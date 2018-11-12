@@ -2,7 +2,7 @@
 # Setting project specific environmental variables
 #
 # Franklin Chou
-# 05 APR 2016
+# 11 NOV 2018
 #
 # Usage:
 # To set project environment variables, issue `source setenv`
