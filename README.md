@@ -9,7 +9,7 @@ you want 'em, gone when you don't.
 project.
 
 * Create a file named `.env` and list your project's environmental variables,
-e.g., `DATABASE='/path/to/database.db'`
+e.g., `DATABASE=/path/to/database.db`
 
 * Issue: `source setenv.sh` to set up environment variables _AND_ setup the virutalenv. If the venv
 and environment variables are correctly setup a `[VENV+]` indicator will appear on the left
