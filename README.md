@@ -7,7 +7,7 @@ you want 'em, gone when you don't.
 
 * Clone this repository and copy the `setenv.sh` file to the root of your project.
 
-* SETUP THE VIRTUAL ENVIRONMENT (by issuing `virtualenv venv`)
+* If installing for the first time - PERFORM INITIAL SETUP OF THE VIRTUAL ENVIRONMENT (by issuing `virtualenv venv`)
 
 * Create a file named `.env` and list your project's environmental variables,
 e.g., `DATABASE=/path/to/database.db`
