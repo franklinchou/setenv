@@ -7,19 +7,19 @@ you want 'em, gone when you don't.
 
 * Clone this repository and copy the `setenv.sh` file to the root of your project.
 
-* If installing for the first time - PERFORM INITIAL SETUP OF THE VIRTUAL ENVIRONMENT (by issuing `virtualenv venv`)
+* (For Python projects only) If installing for the first time - PERFORM INITIAL SETUP OF THE VIRTUAL ENVIRONMENT (by issuing `virtualenv venv`)
 
-* Create a file named `.env` and list your project's environmental variables,
+* Create a file named `.env` in the project's root directory and list your project specific environmental variables,
 e.g., `DATABASE=/path/to/database.db`
 
-* Issue: `source setenv.sh` to set up environment variables _AND_ start the virutalenv. If the venv
-and environment variables are correctly setup a `[VENV+]` indicator will appear on the left
-hand side of the prompt in bold purple. (Issuing `pip -V` should also show the directory of the 
-virtual environment's python interpreter.)
+* Issue: `source setenv.sh` to set up environment variables (this will also start the virtualenv for Python projects). If the environment variables are 
+setup  correctly a `[VENV+]` indicator will appear on the left
+hand side of the prompt in bold purple. (For Python projects, issuing `pip -V` should also show the directory of the 
+virtual environment's Python interpreter.)
 
-* Issue: `usetenv` to exit the virtual environment _AND_ unset all environment variables.
+* Issue: `usetenv` unset all environment variables (and, for Python projects, exit the virtualenv).
 
-__NOTES__:
+__NOTES__ (For Python projects only):
 
 * This will completely override the builtin `deactivate` command.
 * The default venv scripts are not modified; so the canned venv setup script will still work out of
