@@ -17,7 +17,7 @@ setup  correctly a `[VENV+]` indicator will appear on the left
 hand side of the prompt in bold purple. (For Python projects, issuing `pip -V` should also show the directory of the 
 virtual environment's Python interpreter.)
 
-* Issue: `usetenv` unset all environment variables (and, for Python projects, exit the virtualenv).
+* Issue: `usetenv` to unset all environment variables. (For Python projects this will also exit the virtualenv).
 
 __NOTES__ (For Python projects only):
 
